@@ -27,6 +27,12 @@
     transform: translateZ(0); /* Forza l'accelerazione hardware */
     position: relative;      /* Per posizionamento del logo */
   }
+
+  @media (max-width: 430px) {
+    .banner {
+      background-image: url('../assets/img/headers/header-hx430.jpeg');
+    }
+  }
     
   .logo-animation {                       /* Logo animato sopra il banner */
     position: absolute;
@@ -566,7 +572,7 @@ body {
   overflow: hidden;
   border: none;
   min-width: 320px;
-  height: 180px;
+  height: 220px !important;
   max-width: 100%;
   padding: 0;
   transition: box-shadow 0.3s, transform 0.4s;
