@@ -359,7 +359,6 @@ body {
   top: -0.5rem;
   left: 2rem;
   z-index: 10;
-  overflow: hidden;
   
   /* Glassmorphism Effect stile iOS per turchese */
   background: linear-gradient(
