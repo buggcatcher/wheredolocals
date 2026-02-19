@@ -54,8 +54,37 @@ function animateLogo() { // Animazione logo WDL
   }
 }
 
+function lazyLoadCarouselBackgrounds() {
+  const cards = document.querySelectorAll('.carousel-card[data-bg]');
+  if (!cards.length) return;
+
+  const loadCardBackground = (card) => {
+    const bg = card.getAttribute('data-bg');
+    if (!bg) return;
+    card.style.backgroundImage = `url('${bg}')`;
+    card.removeAttribute('data-bg');
+  };
+
+  if (!('IntersectionObserver' in window)) {
+    cards.forEach(loadCardBackground);
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        loadCardBackground(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '200px 0px', threshold: 0.01 });
+
+  cards.forEach((card) => observer.observe(card));
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   animateLogo();
+  lazyLoadCarouselBackgrounds();
 });
 
 // === Ricerca intelligente pagine/sinonimi ===

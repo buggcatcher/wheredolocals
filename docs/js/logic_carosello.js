@@ -109,6 +109,9 @@ document.querySelectorAll('.carousel').forEach(carousel => {
       // Rimuovi le classi di animazione precedenti per permettere il reset
       pill.classList.remove('animate-pill-left', 'animate-pill-right');
       
+      // Force reflow per resettare l'animazione
+      void pill.offsetWidth;
+      
       // Determina la direzione: aumenta = destra, diminuisce = sinistra
       if (current > previousCurrent) {
         // Movimento a destra nel carosello = swipe a sinistra
@@ -228,12 +231,16 @@ document.querySelectorAll('.carousel').forEach(carousel => {
       touchTimeout = null;
     }
   });
+  // Event listener per rimuovere le classi quando l'animazione della pillola finisce
+  if (pill) {
+    pill.addEventListener('animationend', (e) => {
+      if (e.animationName === 'pill-slide-left' || e.animationName === 'pill-slide-right') {
+        pill.classList.remove('animate-pill-left', 'animate-pill-right');
+      }
+    });
+  }
+  
   track.addEventListener('transitionend', () => {
-    // Rimuovi le classi di animazione dalla pillola al termine dell'animazione
-    if (pill) {
-      pill.classList.remove('animate-pill-left', 'animate-pill-right');
-    }
-    
     if (current === cards.length - 1) jumpTo(1); // clone in fondo → prima reale
     if (current === 0) jumpTo(cards.length - 2); // clone in testa → ultima reale
     

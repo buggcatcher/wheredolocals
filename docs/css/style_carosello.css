@@ -84,6 +84,8 @@ body {
 
 .carousel-card {
   background: #fff;
+  background-size: cover;
+  background-position: center;
   border-radius: 32px;
   box-shadow:
     0 1.5px 4px rgba(59,210,201,0.12),
