@@ -121,9 +121,14 @@ body {
 /* Pillola bianca con titolo in alto a destra */
 .carousel-card .card-title-pill {
   position: absolute;
-  top: -25px;
-  right: 10px;
+  top: -0.5rem;
+  left: 10px;  /* Posizionato dinamicamente via JavaScript */
   z-index: 15;
+  
+  height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px) saturate(150%);
@@ -133,9 +138,9 @@ body {
   border: 2.5px solid rgba(59, 210, 201, 0.3);
   border-radius: 40px;
   font-family: 'Poppins', Arial, sans-serif;
-  font-size: 0.85em;
-  font-weight: 700;
-  padding: 0.35em 1.2em;
+  font-size: 1em;
+  font-weight: 1000;
+  padding: 0 1.5em;
   
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.15),
@@ -147,14 +152,14 @@ body {
   white-space: nowrap;
 }
 
-/* Icona in alto a destra sotto la pillola */
+/* Icona in basso a sinistra */
 .carousel-card .card-icon {
   position: absolute;
-  top: 55px;
-  right: 18px;
+  top: 120px !important;
+  left: 18px;
   z-index: 10;
-  width: 36px;
-  height: 36px;
+  width: 42px !important;
+  height: 42px !important;
   object-fit: contain;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.15);
@@ -305,9 +310,9 @@ body {
   
   .carousel-card .card-title-pill {
     font-size: 1em;
-    padding: 0.4em 1.5em;
-    top: -30px;
-    right: 12px;
+    padding: 0 1.3em;
+    top: -0.5rem;
+    left: 10px;  /* Posizionato dinamicamente via JavaScript */
   }
   
   .carousel-card .card-icon {
@@ -464,11 +469,11 @@ body {
   
   color: #ffffff;
   border: 2.5px solid rgba(59, 210, 201, 0.6);
-  border-radius: 40px;
+  border-radius: 40px 0 0 40px;
   font-family: 'Poppins', Arial, sans-serif;
   font-size: 1.45em;
   font-weight: 1000;
-  padding: 0.45em 2.2em;
+  padding: 0.45em 2em;
   
   box-shadow: 
     0 4px 20px rgba(59, 210, 201, 0.3),
@@ -494,7 +499,7 @@ body {
     rgba(255, 255, 255, 0.35) 0%,
     rgba(255, 255, 255, 0) 100%
   );
-  border-radius: 40px 40px 0 0;
+  border-radius: 40px 0 0 0;
   pointer-events: none;
 }
 
@@ -540,9 +545,9 @@ body {
   }
   
   .carousel-card .card-title-pill {
-    font-size: 0.75em;
-    padding: 0.3em 1em;
-    top: -22px;
+    font-size: 0.85em;
+    padding: 1.5em 1.8em;
+    top: -2rem;
   }
   
   .carousel-card .card-icon {
