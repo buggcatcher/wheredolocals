@@ -34,7 +34,7 @@ function positionWhitePills() {
 
         // La pillola bianca inizia a pillEndXDistance dal bordo sinistro della card
         // Questo valore è IDENTICO per tutte le card
-        const leftPosition = pillEndXDistance - 48;
+        const leftPosition = pillEndXDistance - 50;
         
         // Applica il left (identico per tutte le pillole)
         whitePill.style.left = `${leftPosition}px`;
