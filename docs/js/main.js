@@ -61,7 +61,10 @@ function lazyLoadCarouselBackgrounds() {
   const loadCardBackground = (card) => {
     const bg = card.getAttribute('data-bg');
     if (!bg) return;
-    card.style.backgroundImage = `url('${bg}')`;
+    const imageArea = card.querySelector('.card-image-area');
+    if (imageArea) {
+      imageArea.style.backgroundImage = `url('${bg}')`;
+    }
     card.removeAttribute('data-bg');
   };
 

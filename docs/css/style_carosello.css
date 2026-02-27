@@ -26,7 +26,7 @@ body {
 
 .carousel {
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   padding: 0.5rem 0 1.6rem 0;
 }
@@ -40,15 +40,6 @@ body {
   display: flex;
   transform: translateX(var(--carousel-offset));
   transition: transform var(--carousel-duration) var(--carousel-easing);
-
-.carousel-card .carousel-title-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: 6px;
-  background: transparent;
-  display: inline-block;
-}
   will-change: transform;
   gap: 1rem;
   padding: 0 1rem;
@@ -56,8 +47,6 @@ body {
   
   /* Nascosto inizialmente per prevenire FOUC */
   opacity: 0;
-  display: flex;
-  align-items: center;
   gap: 8px;
   transition: transform var(--carousel-duration) var(--carousel-easing), 
               opacity 0.15s ease-out;
@@ -86,17 +75,17 @@ body {
   background: #fff;
   background-size: cover;
   background-position: center;
-  border-radius: 32px;
+  border-radius: 35px;
   box-shadow:
     0 1.5px 4px rgba(59,210,201,0.12),
     0 4px 12px rgba(0,0,0,0.10),
     0 8px 16px rgba(0,0,0,0.07),
     0 1px 2px rgba(59,210,201,0.08);
   display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: visible;
   border: none;
   min-width: 320px;
   height: 150px;
@@ -105,9 +94,22 @@ body {
   transition: box-shadow 0.3s, transform 0.4s;
   text-decoration: none;
   color: inherit;
-  margin-top: 60px; /* Spazio verticale sopra ogni card */
-  position: relative; /* Abilita il posizionamento assoluto dei figli */
+  margin-top: 60px;
+  position: relative;
 }
+
+/* Contenitore immagine - occupa 80% superiore */
+.carousel-card .card-image-area {
+  position: relative;
+  height: 80%;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 32px 32px 0 0;
+  overflow: hidden;
+}
+
 .carousel-card.active {
   box-shadow:
     0 3px 12px rgba(59,210,201,0.15),
@@ -116,6 +118,88 @@ body {
     0 1.5px 4px rgba(59,210,201,0.10);
 }
 
+/* Pillola bianca con titolo in alto a destra */
+.carousel-card .card-title-pill {
+  position: absolute;
+  top: -25px;
+  right: 10px;
+  z-index: 15;
+  
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  
+  color: #000000;
+  border: 2.5px solid rgba(59, 210, 201, 0.3);
+  border-radius: 40px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 0.85em;
+  font-weight: 700;
+  padding: 0.35em 1.2em;
+  
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Icona in alto a destra sotto la pillola */
+.carousel-card .card-icon {
+  position: absolute;
+  top: 55px;
+  right: 18px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Sottotitoli in fondo alla card (20% altezza) */
+.carousel-card .card-subtitle {
+  position: relative;
+  height: 20%;
+  min-height: 30px;
+  
+  background: linear-gradient(
+    135deg,
+    rgba(59, 210, 201, 0.95) 0%,
+    rgba(48, 173, 165, 0.95) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 0 0 30px 30px;
+}
+
+.carousel-card .card-subtitle p {
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* DEPRECATED: Vecchi stili glassmorphism - mantenuti per retrocompatibilità */
+
+/* DEPRECATED: Vecchi stili per carousel-img - sostituiti da card-icon */
+/*
 .carousel-card .carousel-img {
   width: 45px;
   min-width: 0;
@@ -129,7 +213,10 @@ body {
   right: 10px;
   margin: 0;
 }
+*/
 
+/* DEPRECATED: Vecchi stili glassmorphism per carousel-content */
+/*
 .carousel-card .carousel-content {
   flex: 0 0 auto;
   width: fit-content;
@@ -143,7 +230,6 @@ body {
   position: relative;
   overflow: hidden;
   
-  /* Glassmorphism Effect - Effetto vetro sfocato stile iOS */
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.25) 0%,
@@ -160,8 +246,10 @@ body {
   align-items: center;
   text-align: center;
 }
+*/
 
-/* Riflesso vetro iOS sulla parte superiore */
+/* DEPRECATED: Riflesso vetro iOS sulla parte superiore */
+/*
 .carousel-card .carousel-content::before {
   content: '';
   position: absolute;
@@ -199,6 +287,7 @@ body {
   position: relative;
   z-index: 1;
 }
+*/
 
 .card-overlay {
   background: none !important;
@@ -213,18 +302,30 @@ body {
     min-width: 480px;
     max-width: 900px;
   }
-  .carousel-card .carousel-img {
-    width: 45px;
-    min-width: 0px;
-    height: 45px;
-    border-radius: 8px;
-    margin: 0;
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  
+  .carousel-card .card-title-pill {
+    font-size: 1em;
+    padding: 0.4em 1.5em;
+    top: -30px;
+    right: 12px;
   }
-  .carousel-card .carousel-content {
-    padding: 18px 18px 18px 18px;
+  
+  .carousel-card .card-icon {
+    width: 42px;
+    height: 42px;
+    top: 65px;
+    right: 20px;
+    padding: 8px;
+  }
+  
+  .carousel-card .card-subtitle {
+    height: 20%;
+    min-height: 35px;
+    padding: 10px 16px;
+  }
+  
+  .carousel-card .card-subtitle p {
+    font-size: 0.9rem;
   }
 }
 
@@ -314,7 +415,7 @@ body {
     max-width: 100%;
   }
   .carousel-card {
-    flex-direction: row-reverse;
+    flex-direction: column;
     min-width: 320px;
     max-width: 100%;
     margin: 0;
@@ -323,15 +424,6 @@ body {
     padding-left: 6px;
     padding-right: 6px;
     gap: 12px;
-  } 
-  .carousel-card .carousel-img {
-    width: 45px;
-    height: 45px;
-    margin: 0;
-    border-radius: 8px;
-    position: absolute;
-    top: 10px;
-    right: 10px;
   }
 }
 
@@ -445,5 +537,18 @@ body {
     top: -1.25rem;
     font-size: 1.15em;
     padding: 0.32em 1.3em;
+  }
+  
+  .carousel-card .card-title-pill {
+    font-size: 0.75em;
+    padding: 0.3em 1em;
+    top: -22px;
+  }
+  
+  .carousel-card .card-icon {
+    width: 32px;
+    height: 32px;
+    top: 50px;
+    right: 15px;
   }
 }
