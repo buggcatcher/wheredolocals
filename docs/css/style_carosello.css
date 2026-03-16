@@ -44,7 +44,6 @@ body {
   gap: 1rem;
   padding: 0 1.6rem;
   box-sizing: border-box;
-  touch-action: pan-y;
 
   /* Nascosto inizialmente per prevenire FOUC */
   opacity: 0;
