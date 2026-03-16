@@ -1,87 +1,10 @@
 // Carosello multiistanza: logica per ogni carosello indipendente
 
-const IS_IOS_SAFARI = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-function getCarouselVerticalLockState() {
-  if (!window.__carouselVerticalLockState) {
-    window.__carouselVerticalLockState = {
-      activeCount: 0,
-      previousBodyPosition: '',
-      previousBodyTop: '',
-      previousBodyLeft: '',
-      previousBodyRight: '',
-      previousBodyWidth: '',
-      previousBodyOverflow: '',
-      previousHtmlOverflow: '',
-      scrollY: 0
-    };
-  }
-  return window.__carouselVerticalLockState;
-}
-
-function lockVerticalScrollForCarousel() {
-  if (!IS_IOS_SAFARI) return;
-
-  const state = getCarouselVerticalLockState();
-  state.activeCount += 1;
-  if (state.activeCount > 1) return;
-
-  state.previousBodyPosition = document.body.style.position;
-  state.previousBodyTop = document.body.style.top;
-  state.previousBodyLeft = document.body.style.left;
-  state.previousBodyRight = document.body.style.right;
-  state.previousBodyWidth = document.body.style.width;
-  state.previousBodyOverflow = document.body.style.overflow;
-  state.previousHtmlOverflow = document.documentElement.style.overflow;
-  state.scrollY = window.scrollY || window.pageYOffset || 0;
-
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${state.scrollY}px`;
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-  document.body.style.width = '100%';
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
-}
-
-function unlockVerticalScrollForCarousel(force = false) {
-  if (!IS_IOS_SAFARI) return;
-
-  const state = getCarouselVerticalLockState();
-  if (force) {
-    state.activeCount = 0;
-  } else if (state.activeCount > 0) {
-    state.activeCount -= 1;
-  }
-
-  if (state.activeCount > 0) return;
-
-  document.body.style.position = state.previousBodyPosition;
-  document.body.style.top = state.previousBodyTop;
-  document.body.style.left = state.previousBodyLeft;
-  document.body.style.right = state.previousBodyRight;
-  document.body.style.width = state.previousBodyWidth;
-  document.body.style.overflow = state.previousBodyOverflow;
-  document.documentElement.style.overflow = state.previousHtmlOverflow;
-
-  window.scrollTo(0, state.scrollY);
-}
-
-if (!window.__carouselVerticalLockListenersAdded) {
-  window.addEventListener('pagehide', () => unlockVerticalScrollForCarousel(true));
-  window.addEventListener('blur', () => unlockVerticalScrollForCarousel(true));
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      unlockVerticalScrollForCarousel(true);
-    }
-  });
-  window.__carouselVerticalLockListenersAdded = true;
-}
-
 document.querySelectorAll('.carousel').forEach(carousel => {
   const track = carousel.querySelector('.carousel-track');
   track.setAttribute('data-enhanced-drag', 'true');
+  const isIOSWebKit = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const originalCards = Array.from(track.querySelectorAll('.carousel-card'));
   const total = originalCards.length;
   const TOUCH_SNAP_BIAS_STEPS = 0.2; // Aumenta per swipe più "pigro" (es. 0.14), riduci per più precisione (es. 0.08)
@@ -275,21 +198,23 @@ document.querySelectorAll('.carousel').forEach(carousel => {
   let isDragging = false;
   let dragIntentLocked = false;
   let isHorizontalDrag = false;
+  let dragAxis = null;
   let dragBaseOffset = 0;
-  let verticalLockActive = false;
+
+  function setHorizontalDragClass(enabled) {
+    carousel.classList.toggle('carousel-dragging-x', enabled);
+  }
 
   function resetTouchState() {
-    if (verticalLockActive) {
-      unlockVerticalScrollForCarousel();
-      verticalLockActive = false;
-    }
     touchStartX = null;
     touchStartY = null;
     touchCurrentX = null;
     isDragging = false;
     dragIntentLocked = false;
     isHorizontalDrag = false;
+    dragAxis = null;
     dragBaseOffset = 0;
+    setHorizontalDragClass(false);
   }
 
   track.addEventListener('touchstart', e => {
@@ -306,6 +231,8 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     isDragging = false;
     dragIntentLocked = false;
     isHorizontalDrag = false;
+    dragAxis = null;
+    setHorizontalDragClass(false);
   }, { passive: true });
 
   track.addEventListener('touchmove', e => {
@@ -317,18 +244,28 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     touchCurrentX = touch.clientX;
 
     if (!dragIntentLocked) {
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      const minStartMove = isIOSWebKit ? 3 : 6;
+      if (absDx < minStartMove && absDy < minStartMove) return;
+
+      const horizontalRatio = isIOSWebKit ? 1.05 : 1.15;
+      if (absDx > absDy * horizontalRatio) {
+        dragAxis = 'x';
+      } else if (absDy > absDx * 1.05) {
+        dragAxis = 'y';
+      }
+
+      if (!dragAxis) return;
+
       dragIntentLocked = true;
-      isHorizontalDrag = Math.abs(dx) > Math.abs(dy) * 1.15;
+      isHorizontalDrag = dragAxis === 'x';
+      setHorizontalDragClass(isHorizontalDrag);
     }
 
     if (!isHorizontalDrag) return;
 
     isDragging = true;
-    if (!verticalLockActive) {
-      lockVerticalScrollForCarousel();
-      verticalLockActive = true;
-    }
     if (e.cancelable) {
       e.preventDefault();
     }
