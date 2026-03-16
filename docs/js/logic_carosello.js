@@ -2,6 +2,7 @@
 
 document.querySelectorAll('.carousel').forEach(carousel => {
   const track = carousel.querySelector('.carousel-track');
+  track.setAttribute('data-enhanced-drag', 'true');
   const originalCards = Array.from(track.querySelectorAll('.carousel-card'));
   const total = originalCards.length;
 
@@ -30,24 +31,53 @@ document.querySelectorAll('.carousel').forEach(carousel => {
   const cards = Array.from(track.querySelectorAll('.carousel-card'));
   let current = 1; // inizia dalla prima card reale
   let previousCurrent = current; // Traccia il valore precedente per determinare la direzione
+  let suppressClickUntil = 0;
   
   // Ottieni la pillola dal contenitore genitore
   const carouselSection = carousel.closest('.carousel-section');
   const pill = carouselSection ? carouselSection.querySelector('.carousel-pill') : null;
   
   // Calcolo e posizionamento ultra-veloce con CSS Custom Properties
+  function getCenteredOffsetForIndex(index) {
+    if (window.innerWidth >= 700) return 0;
+
+    const dims = calculateDimensions();
+    const targetOffset =
+      (dims.cardWidth * index) +
+      (dims.gap * index) -
+      (dims.carouselWidth / 2) +
+      (dims.cardWidth / 2) +
+      dims.paddingLeft;
+
+    return -targetOffset;
+  }
+
+  function applyTrackOffset(offset, animate = false) {
+    track.style.setProperty('--carousel-offset', `${offset}px`);
+    track.style.setProperty('--carousel-duration', animate ? '0.4s' : '0s');
+  }
+
+  function getNearestIndexFromOffset(offset) {
+    if (window.innerWidth >= 700) return current;
+
+    const dims = calculateDimensions();
+    const step = dims.cardWidth + dims.gap;
+    if (!step) return current;
+
+    const anchor = (dims.carouselWidth / 2) - (dims.cardWidth / 2) - dims.paddingLeft;
+    const rawIndex = (anchor - offset) / step;
+    const nearest = Math.round(rawIndex);
+
+    return Math.max(0, Math.min(cards.length - 1, nearest));
+  }
+
   function setInitialPosition() {
-    if (window.innerWidth < 700) {
-      const dims = calculateDimensions();
-      const targetOffset = (dims.cardWidth * current) + (dims.gap * current) - (dims.carouselWidth / 2) + (dims.cardWidth / 2) + dims.paddingLeft;
-      const offsetValue = `${-targetOffset}px`;
-      const currentCSSOffset = getComputedStyle(track).getPropertyValue('--carousel-offset').trim();
-      if (currentCSSOffset !== offsetValue) {
-        track.style.setProperty('--carousel-offset', offsetValue);
-      }
-    } else {
-      // Su desktop, nessun centramento
-      track.style.setProperty('--carousel-offset', '0px');
+    const offset = getCenteredOffsetForIndex(current);
+    const offsetValue = `${offset}px`;
+    const currentCSSOffset = getComputedStyle(track).getPropertyValue('--carousel-offset').trim();
+
+    if (currentCSSOffset !== offsetValue) {
+      track.style.setProperty('--carousel-offset', offsetValue);
     }
     track.style.setProperty('--carousel-duration', '0s');
   }
@@ -95,14 +125,8 @@ document.querySelectorAll('.carousel').forEach(carousel => {
       const isActive = (current - 1) === i;
       dot.style.backgroundColor = isActive ? '#20b2aa' : '#ccc';
     });
-    if (window.innerWidth < 700) {
-      const dims = calculateDimensions();
-      const offset = (dims.cardWidth * current) + (dims.gap * current) - (dims.carouselWidth / 2) + (dims.cardWidth / 2) + dims.paddingLeft;
-      track.style.setProperty('--carousel-offset', `${-offset}px`);
-    } else {
-      track.style.setProperty('--carousel-offset', '0px');
-    }
-    track.style.setProperty('--carousel-duration', animate ? '0.4s' : '0s');
+    const centeredOffset = getCenteredOffsetForIndex(current);
+    applyTrackOffset(centeredOffset, animate);
     
     // Animazione della pillola: determina la direzione in base al movimento
     if (animate && pill) {
@@ -160,77 +184,89 @@ document.querySelectorAll('.carousel').forEach(carousel => {
   
   window.addEventListener('resize', () => updateCarousel(false));
 
-  // Swipe touch - Ottimizzato per Safari iOS
-  let startX = null;
-  let startY = null;
+  // Drag touch ancorato al dito + snap alla card più vicina
+  let touchStartX = null;
+  let touchStartY = null;
+  let touchCurrentX = null;
   let isDragging = false;
-  let swipeTriggered = false;
-  
-  track.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
+  let dragIntentLocked = false;
+  let isHorizontalDrag = false;
+  let dragBaseOffset = 0;
+
+  function resetTouchState() {
+    touchStartX = null;
+    touchStartY = null;
+    touchCurrentX = null;
     isDragging = false;
-    swipeTriggered = false;
-  }, { passive: true });
-  
-  track.addEventListener('touchmove', e => {
-    if (startX === null || startY === null || swipeTriggered) return;
-    
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const dx = currentX - startX;
-    const dy = currentY - startY;
-    
-    // Solo se il movimento orizzontale è chiaramente maggiore di quello verticale
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 15) {
-      isDragging = true;
-    }
-  }, { passive: true });
-  
-  track.addEventListener('touchend', e => {
-    // Reset immediato se non abbiamo coordinate valide
-    if (startX === null || startY === null) {
-      startX = null;
-      startY = null;
-      isDragging = false;
-      swipeTriggered = false;
+    dragIntentLocked = false;
+    isHorizontalDrag = false;
+    dragBaseOffset = 0;
+  }
+
+  track.addEventListener('touchstart', e => {
+    if (window.innerWidth >= 700) {
+      resetTouchState();
       return;
     }
-    
-    // Processa il nuovo swipe SOLO se non è già in corso
-    if (!swipeTriggered) {
-      // Calcola il movimento finale solo su touchend
-      const currentX = e.changedTouches[0].clientX;
-      const currentY = e.changedTouches[0].clientY;
-      const dx = currentX - startX;
-      const dy = currentY - startY;
-      
-      // Verifica se è un swipe orizzontale valido
-      if (isDragging && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-        swipeTriggered = true;
-        if (dx < 0) current++;
-        if (dx > 0) current--;
-        updateCarousel();
-      }
-    }
-    
-    // Reset SEMPRE alla fine - questo è fondamentale per Safari iOS
-    startX = null;
-    startY = null;
+
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchCurrentX = touch.clientX;
+    dragBaseOffset = getCenteredOffsetForIndex(current);
     isDragging = false;
-    swipeTriggered = false;
+    dragIntentLocked = false;
+    isHorizontalDrag = false;
   }, { passive: true });
-  
-  // Fallback per resettare le variabili in caso di eventi persi
-  track.addEventListener('touchcancel', e => {
-    startX = null;
-    startY = null;
-    isDragging = false;
-    if (touchTimeout) {
-      clearTimeout(touchTimeout);
-      touchTimeout = null;
+
+  track.addEventListener('touchmove', e => {
+    if (touchStartX === null || touchStartY === null || window.innerWidth >= 700) return;
+
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    touchCurrentX = touch.clientX;
+
+    if (!dragIntentLocked) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      dragIntentLocked = true;
+      isHorizontalDrag = Math.abs(dx) > Math.abs(dy) * 1.15;
     }
-  });
+
+    if (!isHorizontalDrag) return;
+
+    isDragging = true;
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+
+    const draggedOffset = dragBaseOffset + dx;
+    applyTrackOffset(draggedOffset, false);
+  }, { passive: false });
+
+  track.addEventListener('touchend', () => {
+    if (touchStartX === null || window.innerWidth >= 700) {
+      resetTouchState();
+      return;
+    }
+
+    if (isDragging && isHorizontalDrag) {
+      const dx = (touchCurrentX ?? touchStartX) - touchStartX;
+      const finalOffset = dragBaseOffset + dx;
+      current = getNearestIndexFromOffset(finalOffset);
+      updateCarousel(true);
+      suppressClickUntil = Date.now() + 300;
+    }
+
+    resetTouchState();
+  }, { passive: true });
+
+  track.addEventListener('touchcancel', () => {
+    if (isDragging) {
+      updateCarousel(false);
+    }
+    resetTouchState();
+  }, { passive: true });
   // Event listener per rimuovere le classi quando l'animazione della pillola finisce
   if (pill) {
     pill.addEventListener('animationend', (e) => {
@@ -283,6 +319,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
       // Prevent click if there was significant dragging
       e.preventDefault();
       e.stopPropagation();
+      suppressClickUntil = Date.now() + 250;
     }
     
     mouseDown = false;
@@ -298,6 +335,12 @@ document.querySelectorAll('.carousel').forEach(carousel => {
 
   // Handle clicks on carousel cards
   track.addEventListener('click', e => {
+    if (Date.now() < suppressClickUntil) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+
     // Allow navigation if user didn't drag
     if (!mouseDragging && !isDragging) {
       const clickedCard = e.target.closest('a.carousel-card');
