@@ -44,6 +44,7 @@ function syncTurquoisePillWithWhite(section) {
 
   turquoisePill.style.left = `${cardStartX}px`;
   turquoisePill.style.right = 'auto';
+  turquoisePill.style.top = `${whiteRect.top - sectionRect.top}px`;
 
   const turquoiseRect = turquoisePill.getBoundingClientRect();
   const turquoiseEndX = turquoiseRect.right - sectionRect.left;

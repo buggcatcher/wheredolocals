@@ -5,6 +5,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
   track.setAttribute('data-enhanced-drag', 'true');
   const originalCards = Array.from(track.querySelectorAll('.carousel-card'));
   const total = originalCards.length;
+  const TOUCH_SNAP_BIAS_STEPS = 0.2; // Aumenta per swipe più "pigro" (es. 0.14), riduci per più precisione (es. 0.08)
 
   // Funzione per calcolare le dimensioni reali
   function calculateDimensions() {
@@ -57,7 +58,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     track.style.setProperty('--carousel-duration', animate ? '0.4s' : '0s');
   }
 
-  function getNearestIndexFromOffset(offset) {
+  function getNearestIndexFromOffset(offset, swipeDeltaX = 0) {
     if (window.innerWidth >= 700) return current;
 
     const dims = calculateDimensions();
@@ -66,7 +67,11 @@ document.querySelectorAll('.carousel').forEach(carousel => {
 
     const anchor = (dims.carouselWidth / 2) - (dims.cardWidth / 2) - dims.paddingLeft;
     const rawIndex = (anchor - offset) / step;
-    const nearest = Math.round(rawIndex);
+    const hasDirection = Math.abs(swipeDeltaX) > 6;
+    const directionalBias = hasDirection
+      ? (swipeDeltaX < 0 ? TOUCH_SNAP_BIAS_STEPS : -TOUCH_SNAP_BIAS_STEPS)
+      : 0;
+    const nearest = Math.round(rawIndex + directionalBias);
 
     return Math.max(0, Math.min(cards.length - 1, nearest));
   }
@@ -253,7 +258,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     if (isDragging && isHorizontalDrag) {
       const dx = (touchCurrentX ?? touchStartX) - touchStartX;
       const finalOffset = dragBaseOffset + dx;
-      current = getNearestIndexFromOffset(finalOffset);
+      current = getNearestIndexFromOffset(finalOffset, dx);
       updateCarousel(true);
       suppressClickUntil = Date.now() + 300;
     }

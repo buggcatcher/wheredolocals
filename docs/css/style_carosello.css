@@ -437,7 +437,6 @@ body {
 .carousel-card:hover {
   text-decoration: none;
   color: inherit;
-  transform: scale(1.02);
 }
 
 .carousel-card:focus {
