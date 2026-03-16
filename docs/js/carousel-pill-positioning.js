@@ -75,11 +75,14 @@ function scheduleTurquoisePillPositioning(delay = 0) {
 
 function initTurquoisePillPositioning() {
   positionTurquoisePills();
-  requestAnimationFrame(() => positionTurquoisePills());
-  setTimeout(() => positionTurquoisePills(), 120);
 
+  let lastWidth = window.innerWidth;
   window.addEventListener('resize', () => {
-    scheduleTurquoisePillPositioning(80);
+    const currentWidth = window.innerWidth;
+    if (currentWidth !== lastWidth) {
+      lastWidth = currentWidth;
+      scheduleTurquoisePillPositioning(80);
+    }
   });
 }
 
