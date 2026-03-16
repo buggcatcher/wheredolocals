@@ -1,62 +1,90 @@
-// Posizionamento dinamico delle pillole bianche in base alla fine della pillola turchese
-// Ogni pillola bianca DEVE essere al MEDESIMO left per tutte le card
+// Posiziona dinamicamente le pillole turchesi rispetto alle pillole bianche:
+// - il taglio (lato destro) della turchese inizia dove termina la curvatura sinistra della bianca
+// - la pillola turchese mantiene lo stesso spessore (altezza) della bianca
 
-function positionWhitePills() {
-  document.querySelectorAll('.carousel-section').forEach(section => {
-    // Ottieni la pillola turchese
-    const turquoisePill = section.querySelector('.carousel-pill');
-    if (!turquoisePill) return;
+function syncTurquoisePillWithWhite(section) {
+  const turquoisePill = section.querySelector('.carousel-pill');
+  if (!turquoisePill) return;
 
-    // Ottieni tutte le card nella sezione
-    const carousel = section.querySelector('.carousel');
-    if (!carousel) return;
+  const carousel = section.querySelector('.carousel');
+  if (!carousel) return;
 
-    const cards = carousel.querySelectorAll('.carousel-card');
+  const referenceCard =
+    section.querySelector('.carousel-card:not(.carousel-card-clone)') ||
+    section.querySelector('.carousel-card');
 
-    // Calcola la distanza della fine della pillola turchese INIZIALMENTE
-    let pillEndXDistance = null;
-    
-    function calculateInitialDistance() {
-      const pillRect = turquoisePill.getBoundingClientRect();
-      const sectionRect = section.getBoundingClientRect();
-      pillEndXDistance = pillRect.right - sectionRect.left;
-    }
+  if (!referenceCard) return;
 
-    function updatePositions() {
-      if (pillEndXDistance === null) {
-        calculateInitialDistance();
-      }
-      
-      // Posiziona ogni pillola bianca usando la STESSA distanza iniziale per TUTTE
-      cards.forEach(card => {
-        const whitePill = card.querySelector('.card-title-pill');
-        if (!whitePill) return;
+  const cards = section.querySelectorAll('.carousel-card:not(.carousel-card-clone), .carousel-card');
 
-        // La pillola bianca inizia a pillEndXDistance dal bordo sinistro della card
-        // Questo valore è IDENTICO per tutte le card
-        const leftPosition = pillEndXDistance - 50;
-        
-        // Applica il left (identico per tutte le pillole)
-        whitePill.style.left = `${leftPosition}px`;
-        whitePill.style.right = 'auto';
-      });
-    }
+  const referenceWhitePill =
+    section.querySelector('.carousel-card:not(.carousel-card-clone) .card-title-pill') ||
+    section.querySelector('.carousel-card .card-title-pill');
 
-    // Calcola la distanza iniziale al caricamento
-    calculateInitialDistance();
-    updatePositions();
+  if (!referenceWhitePill) return;
 
-    // Aggiorna posizioni solo al resize
-    window.addEventListener('resize', () => {
-      pillEndXDistance = null; // Reset per ricalcolare al resize
-      updatePositions();
-    });
+  const sectionRect = section.getBoundingClientRect();
+  const cardRect = referenceCard.getBoundingClientRect();
+  const whiteRect = referenceWhitePill.getBoundingClientRect();
+
+  if (!whiteRect.width || !whiteRect.height || !cardRect.width) return;
+
+  const cardStartX = cardRect.left - sectionRect.left;
+  const whiteRadius = whiteRect.height / 2;
+
+  const turquoiseComputed = window.getComputedStyle(turquoisePill);
+  turquoisePill.style.display = 'flex';
+  turquoisePill.style.alignItems = 'center';
+  turquoisePill.style.boxSizing = 'border-box';
+  turquoisePill.style.height = `${whiteRect.height}px`;
+  turquoisePill.style.paddingTop = '0';
+  turquoisePill.style.paddingBottom = '0';
+  turquoisePill.style.paddingLeft = turquoiseComputed.paddingLeft;
+  turquoisePill.style.paddingRight = turquoiseComputed.paddingRight;
+
+  turquoisePill.style.left = `${cardStartX}px`;
+  turquoisePill.style.right = 'auto';
+
+  const turquoiseRect = turquoisePill.getBoundingClientRect();
+  const turquoiseEndX = turquoiseRect.right - sectionRect.left;
+  const whiteLeftInCard = turquoiseEndX - cardStartX - whiteRadius;
+
+  cards.forEach(card => {
+    const whitePill = card.querySelector('.card-title-pill');
+    if (!whitePill) return;
+
+    whitePill.style.left = `${whiteLeftInCard}px`;
+    whitePill.style.right = 'auto';
   });
 }
 
-// Aspetta che il DOM sia pronto
+function positionTurquoisePills() {
+  document.querySelectorAll('.carousel-section').forEach(syncTurquoisePillWithWhite);
+}
+
+let resizeTimeout;
+function scheduleTurquoisePillPositioning(delay = 0) {
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+  }
+
+  resizeTimeout = setTimeout(() => {
+    positionTurquoisePills();
+  }, delay);
+}
+
+function initTurquoisePillPositioning() {
+  positionTurquoisePills();
+  requestAnimationFrame(() => positionTurquoisePills());
+  setTimeout(() => positionTurquoisePills(), 120);
+
+  window.addEventListener('resize', () => {
+    scheduleTurquoisePillPositioning(80);
+  });
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', positionWhitePills);
+  document.addEventListener('DOMContentLoaded', initTurquoisePillPositioning);
 } else {
-  positionWhitePills();
+  initTurquoisePillPositioning();
 }

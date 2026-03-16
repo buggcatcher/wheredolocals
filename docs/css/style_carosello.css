@@ -42,7 +42,7 @@ body {
   transition: transform var(--carousel-duration) var(--carousel-easing);
   will-change: transform;
   gap: 1rem;
-  padding: 0 1rem;
+  padding: 0 1.6rem;
   box-sizing: border-box;
   
   /* Nascosto inizialmente per prevenire FOUC */
@@ -138,9 +138,10 @@ body {
   border: 2.5px solid rgba(59, 210, 201, 0.3);
   border-radius: 40px;
   font-family: 'Poppins', Arial, sans-serif;
-  font-size: 1em;
+  font-size: 1.2em;
   font-weight: 1000;
   padding: 0 1.5em;
+  padding-left: 1.75em;
   
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.15),
@@ -311,6 +312,7 @@ body {
   .carousel-card .card-title-pill {
     font-size: 1em;
     padding: 0 1.3em;
+    padding-left: 1.55em;
     top: -0.5rem;
     left: 10px;  /* Posizionato dinamicamente via JavaScript */
   }
@@ -426,8 +428,8 @@ body {
     margin: 0;
   }
   .carousel-track {
-    padding-left: 6px;
-    padding-right: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
     gap: 12px;
   }
 }
@@ -473,7 +475,7 @@ body {
   font-family: 'Poppins', Arial, sans-serif;
   font-size: 1.45em;
   font-weight: 1000;
-  padding: 0.45em 2em;
+  padding: 0.45em 1em!important;
   
   box-shadow: 
     0 4px 20px rgba(59, 210, 201, 0.3),
@@ -547,6 +549,7 @@ body {
   .carousel-card .card-title-pill {
     font-size: 0.85em;
     padding: 1.5em 1.8em;
+    padding-left: 2.05em;
     top: -2rem;
   }
   
