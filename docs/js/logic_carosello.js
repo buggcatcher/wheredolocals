@@ -208,7 +208,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     dragBaseOffset = 0;
   }
 
-  track.addEventListener('touchstart', e => {
+  carousel.addEventListener('touchstart', e => {
     if (window.innerWidth >= 700) {
       resetTouchState();
       return;
@@ -224,7 +224,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     isHorizontalDrag = false;
   }, { passive: true });
 
-  track.addEventListener('touchmove', e => {
+  carousel.addEventListener('touchmove', e => {
     if (touchStartX === null || touchStartY === null || window.innerWidth >= 700) return;
 
     const touch = e.touches[0];
@@ -251,7 +251,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     applyTrackOffset(draggedOffset, false);
   }, { passive: false });
 
-  track.addEventListener('touchend', () => {
+  carousel.addEventListener('touchend', () => {
     if (touchStartX === null || window.innerWidth >= 700) {
       resetTouchState();
       return;
@@ -268,7 +268,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     resetTouchState();
   }, { passive: true });
 
-  track.addEventListener('touchcancel', () => {
+  carousel.addEventListener('touchcancel', () => {
     if (isDragging) {
       updateCarousel(false);
     }
