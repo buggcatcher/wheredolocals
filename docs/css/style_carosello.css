@@ -110,6 +110,13 @@ body {
   overflow: hidden;
 }
 
+.carousel-card .card-image-area,
+.carousel-card .card-subtitle,
+.carousel-card .card-subtitle p,
+.carousel-card .card-icon {
+  pointer-events: none;
+}
+
 .carousel-card.active {
   box-shadow:
     0 3px 12px rgba(59,210,201,0.15),

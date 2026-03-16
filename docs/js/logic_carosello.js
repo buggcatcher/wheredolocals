@@ -37,6 +37,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
   // Ottieni la pillola dal contenitore genitore
   const carouselSection = carousel.closest('.carousel-section');
   const pill = carouselSection ? carouselSection.querySelector('.carousel-pill') : null;
+  const touchSurface = carouselSection || carousel;
   
   // Calcolo e posizionamento ultra-veloce con CSS Custom Properties
   function getCenteredOffsetForIndex(index) {
@@ -208,7 +209,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     dragBaseOffset = 0;
   }
 
-  carousel.addEventListener('touchstart', e => {
+  touchSurface.addEventListener('touchstart', e => {
     if (window.innerWidth >= 700) {
       resetTouchState();
       return;
@@ -224,7 +225,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     isHorizontalDrag = false;
   }, { passive: true });
 
-  carousel.addEventListener('touchmove', e => {
+  touchSurface.addEventListener('touchmove', e => {
     if (touchStartX === null || touchStartY === null || window.innerWidth >= 700) return;
 
     const touch = e.touches[0];
@@ -251,7 +252,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     applyTrackOffset(draggedOffset, false);
   }, { passive: false });
 
-  carousel.addEventListener('touchend', () => {
+  touchSurface.addEventListener('touchend', () => {
     if (touchStartX === null || window.innerWidth >= 700) {
       resetTouchState();
       return;
@@ -268,7 +269,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     resetTouchState();
   }, { passive: true });
 
-  carousel.addEventListener('touchcancel', () => {
+  touchSurface.addEventListener('touchcancel', () => {
     if (isDragging) {
       updateCarousel(false);
     }
