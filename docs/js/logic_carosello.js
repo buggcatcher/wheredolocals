@@ -3,8 +3,6 @@
 document.querySelectorAll('.carousel').forEach(carousel => {
   const track = carousel.querySelector('.carousel-track');
   track.setAttribute('data-enhanced-drag', 'true');
-  const isIOSWebKit = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const originalCards = Array.from(track.querySelectorAll('.carousel-card'));
   const total = originalCards.length;
   const TOUCH_SNAP_BIAS_STEPS = 0.2; // Aumenta per swipe più "pigro" (es. 0.14), riduci per più precisione (es. 0.08)
@@ -198,12 +196,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
   let isDragging = false;
   let dragIntentLocked = false;
   let isHorizontalDrag = false;
-  let dragAxis = null;
   let dragBaseOffset = 0;
-
-  function setHorizontalDragClass(enabled) {
-    carousel.classList.toggle('carousel-dragging-x', enabled);
-  }
 
   function resetTouchState() {
     touchStartX = null;
@@ -212,9 +205,7 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     isDragging = false;
     dragIntentLocked = false;
     isHorizontalDrag = false;
-    dragAxis = null;
     dragBaseOffset = 0;
-    setHorizontalDragClass(false);
   }
 
   track.addEventListener('touchstart', e => {
@@ -231,8 +222,6 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     isDragging = false;
     dragIntentLocked = false;
     isHorizontalDrag = false;
-    dragAxis = null;
-    setHorizontalDragClass(false);
   }, { passive: true });
 
   track.addEventListener('touchmove', e => {
@@ -246,21 +235,9 @@ document.querySelectorAll('.carousel').forEach(carousel => {
     if (!dragIntentLocked) {
       const absDx = Math.abs(dx);
       const absDy = Math.abs(dy);
-      const minStartMove = isIOSWebKit ? 3 : 6;
-      if (absDx < minStartMove && absDy < minStartMove) return;
-
-      const horizontalRatio = isIOSWebKit ? 1.05 : 1.15;
-      if (absDx > absDy * horizontalRatio) {
-        dragAxis = 'x';
-      } else if (absDy > absDx * 1.05) {
-        dragAxis = 'y';
-      }
-
-      if (!dragAxis) return;
-
+      if (absDx < 4 && absDy < 4) return;
       dragIntentLocked = true;
-      isHorizontalDrag = dragAxis === 'x';
-      setHorizontalDragClass(isHorizontalDrag);
+      isHorizontalDrag = absDx > absDy;
     }
 
     if (!isHorizontalDrag) return;
